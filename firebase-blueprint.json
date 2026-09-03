@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access control metadata.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Unique user ID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "RBAC role" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "role", "createdAt"]
+    },
+    "Interaction": {
+      "title": "Interaction",
+      "description": "Multi-turn user reflection, journal entry, and Gemini dialogue.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the interaction record"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owning user"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the journal reflection",
+          "maxLength": 200
+        },
+        "mode": {
+          "type": "string",
+          "description": "Reflection style or mode",
+          "enum": ["reflection", "summary", "brainstorm", "action_items"]
+        },
+        "messages": {
+          "type": "array",
+          "description": "Sequential array of multi-turn messages"
+        },
+        "summary": {
+          "type": "string",
+          "description": "AI-generated summary or key insights",
+          "maxLength": 5000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp"
+        }
+      },
+      "required": ["id", "userId", "title", "mode", "messages", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with role-based access control (RBAC)."
+    },
+    "/users/{userId}/interactions/{interactionId}": {
+      "schema": "Interaction",
+      "description": "User-isolated interaction documents ensuring absolute tenant isolation."
+    }
+  }
+}

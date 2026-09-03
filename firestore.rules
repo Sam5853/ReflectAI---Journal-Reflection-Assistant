@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // RBAC Security Helpers
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'samshaikh5853@gmail.com';
+    }
+
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User profile and RBAC role assignment
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // User-isolated reflection documents ensuring absolute tenant isolation
+    match /users/{userId}/interactions/{interactionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // System telemetry accessible exclusively by authenticated admins
+    match /system/telemetry {
+      allow read, write: if isAdmin();
+    }
+  }
+}
